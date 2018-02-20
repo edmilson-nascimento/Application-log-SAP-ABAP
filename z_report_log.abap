@@ -100,7 +100,7 @@ start-of-selection .
     ls_msg-msgv2    = lcl_class=>date( sy-datum ) .
     ls_msg-msgv3    = lcl_class=>time( sy-uzeit ) .
 *   ls_msg-msgv4    = '' .
-    o_bal_log->add( msg = ls_msg ).
+    o_bal_log->add( ls_msg ).
 
     clear ls_msg .
     ls_msg-msgty    = 'E' .
@@ -110,7 +110,7 @@ start-of-selection .
     ls_msg-msgv2    = lcl_class=>date( sy-datum ) .
     ls_msg-msgv3    = lcl_class=>time( sy-uzeit ) .
 *   ls_msg-msgv4    = '' .
-    o_bal_log->add( msg = ls_msg ).
+    o_bal_log->add( ls_msg ).
 
 
     clear ls_msg .
@@ -121,7 +121,7 @@ start-of-selection .
     ls_msg-msgv2    = lcl_class=>date( sy-datum ) .
     ls_msg-msgv3    = lcl_class=>time( sy-uzeit ) .
 *   ls_msg-msgv4    = '' .
-    o_bal_log->add( msg = ls_msg ).
+    o_bal_log->add( ls_msg ).
 
   endif .
 
