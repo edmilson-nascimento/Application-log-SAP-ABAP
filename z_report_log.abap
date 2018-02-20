@@ -1,7 +1,6 @@
 
 report report_log .
 
-
 type-pools: abap .
 
 class lcl_class definition .
