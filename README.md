@@ -5,8 +5,8 @@ Depois de alguns anos ~~e muita chatice~~ tenho ficado cada vez mais resistente 
 Resolvi fazer minha implementação do [Maravilhos mundo do Application log](https://abapinho.com/2009/09/application-log/). Existem varias utilizações do Application Log (ou mais conhecido como Bal Log), ate mesmo no [wiki scn](https://wiki.scn.sap.com/wiki/display/Snippets/Using+Application+Log) tem alguns exemplos bem exemplicaficados de como utilizar. Para mais exemplos implementados, pode acessar ate na Transação `SE38` com o filtro `SBAL_DEMO_*` que tem uma grande quantidade de aplicações para a solução.
 
 Fiz uma implementação para que pudesse usar a solução das duas formas possiveis:
-1- Salvando log de forma que fique acessivel pela transação `SLG1`;
-2- Armazenando o log e exbindo ao final do processo sem a necessidade de salvar;
+* [1- Salvando log de forma que fique acessivel pela transação `SLG1`](#1--salvando-log-de-forma-a-visualizar-pela-slg1);
+* [2- Armazenando o log e exbindo ao final do processo sem a necessidade de salvar](#2--armazenando-em-tempo-de-execu%C3%A7%C3%A3o-e-exibindo-ao-final-do-processo)
 
 A diferença de implementação é bem simples, então, resolvi fazer de forma a deixar dinamico. Fiz um a classe [zcl_bal_log](https://github.com/edmilson-nascimento/Application-log-SAP-ABAP/blob/master/zcl_bal_log.abap) para melhorar a utilização das funções que contemplam o log. Sendo assim, as utilizações diferente ficam a cargo apenas de usar de forma diferente o método `constructor`, como mostrado nos exemplos abaixo.
 
