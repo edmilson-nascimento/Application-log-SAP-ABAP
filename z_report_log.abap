@@ -1,5 +1,4 @@
-
-report report_log .
+report z_report_log .
 
 type-pools: abap .
 
@@ -131,3 +130,4 @@ end-of-selection .
   if app_log is bound .
     app_log->show( ) .
   endif .
+
