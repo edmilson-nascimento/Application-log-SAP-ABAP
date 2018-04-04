@@ -1,4 +1,4 @@
-# ABAP-bal-log
+# Application Log
 
 [![N|Solid](https://wiki.scn.sap.com/wiki/download/attachments/1710/ABAP%20Development.png?version=1&modificationDate=1446673897000&api=v2)](https://www.sap.com/brazil/developer.html)
 Depois de alguns anos ~~e muita chatice~~ tenho ficado cada vez mais resistente quando alguem me pede para fazer uma _Tabela de Log_ para um _processo X_. Minha resposta sempre é: **você sabia que o SAP tem seu proprio controle de Log sem a necessidade de criar tabelas novas?**
