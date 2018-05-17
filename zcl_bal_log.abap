@@ -71,7 +71,7 @@ class zcl_bal_log implementation.
 
   method add.
 
-*   Cria o Log caso ainda não tenha sido feito
+*   Cria o Log caso ainda nÃ£o tenha sido feito
     if gv_handles is initial .
       me->create( changing handles = gv_handles ).
     endif .
@@ -196,5 +196,43 @@ class zcl_bal_log implementation.
     free: lt_handles, ls_display_profile .
 
   endmethod.
+  
+  method EXISTS.
+
+    data:
+      handles type balmsghndl .
+
+    if me->gv_handles is not initial .
+
+      handles-log_handle = me->gv_handles .
+      handles-msgnumber  = '000001' .
+
+      call function 'BAL_LOG_MSG_READ'
+        exporting
+          i_s_msg_handle                 = handles
+  *       i_langu                        = sy-langu
+  *     importing
+  *       e_s_msg                        =
+  *       e_exists_on_db                 =
+  *       e_txt_msgty                    =
+  *       e_txt_msgid                    =
+  *       e_txt_detlevel                 =
+  *       e_txt_probclass                =
+  *       e_txt_msg                      =
+  *       e_warning_text_not_found       =
+        exceptions
+          log_not_found                  = 1
+          msg_not_found                  = 2
+          others                         = 3 .
+
+      value = sy-subrc .
+
+    else .
+
+      value = 9 .
+
+    endif .
+
+  endmethod.  
 
 endclass.
