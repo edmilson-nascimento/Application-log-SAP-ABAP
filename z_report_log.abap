@@ -127,7 +127,11 @@ start-of-selection .
 
 end-of-selection .
 
-  if app_log is bound .
+if app_log is bound .
+
+  if app_log->exists( ) eq 0 .
+
     app_log->show( ) .
+
   endif .
 
