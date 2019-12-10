@@ -202,7 +202,7 @@ class zcl_bal_log implementation.
     data:
       handles type balmsghndl .
 
-    if me->gv_handles is not initial .
+    if ( me->gv_handles is not initial ) .
 
       handles-log_handle = me->gv_handles .
       handles-msgnumber  = '000001' .
