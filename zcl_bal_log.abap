@@ -72,11 +72,11 @@ class zcl_bal_log implementation.
   method add.
 
 *   Cria o Log caso ainda não tenha sido feito
-    if gv_handles is initial .
+    if ( gv_handles is initial ) .
       me->create( changing handles = gv_handles ).
     endif .
 
-    if gv_handles is not initial .
+    if ( gv_handles is not initial ) .
 
       call function 'BAL_LOG_MSG_ADD'
         exporting
@@ -89,8 +89,8 @@ class zcl_bal_log implementation.
           log_is_full      = 3
           others           = 4.
 
-      if sy-subrc eq 0 .
-        if gv_object is not initial .
+      if ( sy-subrc eq 0 ) .
+        if ( gv_object is not initial ) .
           me->save( ).
         endif .
       else .
@@ -118,7 +118,7 @@ class zcl_bal_log implementation.
       exceptions
         log_not_found         = 1
         others                = 2.
-    if sy-subrc ne 0 .
+    if ( sy-subrc ne 0 ) .
       message id sy-msgid type sy-msgty number sy-msgno
             with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
     endif.
@@ -140,7 +140,7 @@ class zcl_bal_log implementation.
         save_not_allowed = 2
         numbering_error  = 3
         others           = 4.
-    if sy-subrc ne 0 .
+    if ( sy-subrc ne 0 ) .
       message id sy-msgid type sy-msgty number sy-msgno
             with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
     endif.
@@ -162,7 +162,7 @@ class zcl_bal_log implementation.
         e_s_display_profile = ls_display_profile
       exceptions
         others              = 1.
-    if sy-subrc ne 0 .
+    if ( sy-subrc ne 0 ) .
       message id sy-msgid type sy-msgty number sy-msgno
             with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
     endif.
