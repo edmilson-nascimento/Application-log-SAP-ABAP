@@ -10,12 +10,16 @@ class ZCL_BAL_LOG definition
                 object    type bal_s_log-object    optional
                 subobject type bal_s_log-subobject optional
                 alprog    type bal_s_log-alprog .
+                
     methods add
       importing msg type bal_s_msg .
+      
     methods save .
+    
     methods show .
 
   protected section.
+  
   private section.
 
     class-data:
