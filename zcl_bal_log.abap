@@ -1,3 +1,4 @@
+
 class ZCL_BAL_LOG definition
   public
   final
