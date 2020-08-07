@@ -20,7 +20,6 @@ class ZCL_BAL_LOG definition
     methods show .
 
   protected section.
-  
   private section.
 
     class-data:
