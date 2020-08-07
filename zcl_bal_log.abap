@@ -1,55 +1,63 @@
+CLASS zcl_bal_log DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
 
-class ZCL_BAL_LOG definition
-  public
-  final
-  create public .
+  PUBLIC SECTION.
 
-  public section.
+    METHODS constructor
+      IMPORTING title     TYPE bal_s_log-extnumber
+                object    TYPE bal_s_log-object    OPTIONAL
+                subobject TYPE bal_s_log-subobject OPTIONAL
+                alprog    TYPE bal_s_log-alprog .
 
-    methods constructor
-      importing title     type bal_s_log-extnumber
-                object    type bal_s_log-object    optional
-                subobject type bal_s_log-subobject optional
-                alprog    type bal_s_log-alprog .
-                
-    methods add
-      importing msg type bal_s_msg .
-      
-    methods save .
-    
-    methods show .
+    METHODS add
+      IMPORTING msg TYPE bal_s_msg .
 
-  protected section.
-  private section.
+    METHODS save .
 
-    class-data:
-      gv_title     type bal_s_log-extnumber,
-      gv_object    type bal_s_log-object,
-      gv_subobject type bal_s_log-subobject,
-      gv_alprog    type bal_s_log-alprog,
-      gv_handles   type balloghndl.
+    METHODS show .
 
-    methods create
-      changing  handles type balloghndl .
+    CLASS-METHODS set
+      IMPORTING
+        !title     TYPE bal_s_log-extnumber
+        !object    TYPE bal_s_log-object
+        !subobject TYPE bal_s_log-subobject
+        !alprog    TYPE bal_s_log-alprog
+        !msg_log   TYPE bal_s_msg .
 
-endclass.
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+
+    CLASS-DATA:
+      gv_title     TYPE bal_s_log-extnumber,
+      gv_object    TYPE bal_s_log-object,
+      gv_subobject TYPE bal_s_log-subobject,
+      gv_alprog    TYPE bal_s_log-alprog,
+      gv_handles   TYPE balloghndl.
+
+    METHODS create
+      CHANGING handles TYPE balloghndl .
+
+ENDCLASS.
 
 
-class zcl_bal_log implementation.
+CLASS zcl_bal_log IMPLEMENTATION.
 
-  method constructor .
+  METHOD constructor .
 
     gv_title     = title .
     gv_object    = object .
     gv_subobject = subobject .
     gv_alprog    = alprog .
 
-  endmethod.
+  ENDMETHOD.
 
-  method create.
+  METHOD create.
 
-    data:
-      ls_log type bal_s_log .
+    DATA:
+      ls_log TYPE bal_s_log .
 
     ls_log-extnumber = gv_title.
     ls_log-object    = gv_object .
@@ -57,78 +65,78 @@ class zcl_bal_log implementation.
     ls_log-alprog    = gv_alprog .
 
 *   Create_log.
-    call function 'BAL_LOG_CREATE'
-      exporting
+    CALL FUNCTION 'BAL_LOG_CREATE'
+      EXPORTING
         i_s_log                 = ls_log
-      importing
+      IMPORTING
         e_log_handle            = handles
-      exceptions
+      EXCEPTIONS
         log_header_inconsistent = 1
-        others                  = 2.
+        OTHERS                  = 2.
 
-    if sy-subrc ne 0 .
-      message id sy-msgid type sy-msgty number sy-msgno
-            with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    endif.
+    IF sy-subrc NE 0 .
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
 
-  endmethod.
+  ENDMETHOD.
 
-  method add.
+  METHOD add.
 
 *   Cria o Log caso ainda não tenha sido feito
-    if ( gv_handles is initial ) .
-      me->create( changing handles = gv_handles ).
-    endif .
+    IF ( gv_handles IS INITIAL ) .
+      me->create( CHANGING handles = gv_handles ).
+    ENDIF .
 
-    if ( gv_handles is not initial ) .
+    IF ( gv_handles IS NOT INITIAL ) .
 
-      call function 'BAL_LOG_MSG_ADD'
-        exporting
+      CALL FUNCTION 'BAL_LOG_MSG_ADD'
+        EXPORTING
           i_log_handle     = gv_handles
 *         i_s_msg          = messages
           i_s_msg          = msg
-        exceptions
+        EXCEPTIONS
           log_not_found    = 1
           msg_inconsistent = 2
           log_is_full      = 3
-          others           = 4.
+          OTHERS           = 4.
 
-      if ( sy-subrc eq 0 ) .
-        if ( gv_object is not initial ) .
+      IF ( sy-subrc EQ 0 ) .
+        IF ( gv_object IS NOT INITIAL ) .
           me->save( ).
-        endif .
-      else .
-        message id sy-msgid type sy-msgty number sy-msgno
-              with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-      endif.
-    endif.
+        ENDIF .
+      ELSE .
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+              WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+      ENDIF.
+    ENDIF.
 
-  endmethod.
+  ENDMETHOD.
 
 
-  method save.
+  METHOD save.
 
-    data:
-      lt_handles type bal_t_logh .
+    DATA:
+      lt_handles TYPE bal_t_logh .
 
-    append gv_handles to lt_handles.
+    APPEND gv_handles TO lt_handles.
 
-    call function 'BAL_DB_SAVE_PREPARE'
-      exporting
+    CALL FUNCTION 'BAL_DB_SAVE_PREPARE'
+      EXPORTING
         i_replace_in_all_logs = abap_on
 *       i_t_replace_in_these_logs     =
 *       i_t_replace_message_variables =
 *       i_t_replace_context_fields    =
-      exceptions
+      EXCEPTIONS
         log_not_found         = 1
-        others                = 2.
-    if ( sy-subrc ne 0 ) .
-      message id sy-msgid type sy-msgty number sy-msgno
-            with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    endif.
+        OTHERS                = 2.
+    IF ( sy-subrc NE 0 ) .
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
 
-    call function 'BAL_DB_SAVE'
-      exporting
+    CALL FUNCTION 'BAL_DB_SAVE'
+      EXPORTING
         i_client         = sy-mandt
 *       i_in_update_task = space
         i_save_all       = abap_on
@@ -139,41 +147,43 @@ class zcl_bal_log implementation.
 *      importing
 *       e_new_lognumbers =
 *       e_second_connection  =
-      exceptions
+      EXCEPTIONS
         log_not_found    = 1
         save_not_allowed = 2
         numbering_error  = 3
-        others           = 4.
-    if ( sy-subrc ne 0 ) .
-      message id sy-msgid type sy-msgty number sy-msgno
-            with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    endif.
+        OTHERS           = 4.
+    IF ( sy-subrc NE 0 ) .
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
 
-    free: lt_handles .
+    FREE: lt_handles .
 
-  endmethod.
+  ENDMETHOD.
 
-  method show.
 
-    data:
-      lt_handles         type bal_t_logh,
-      ls_display_profile type bal_s_prof .
+  METHOD show.
 
+
+    DATA:
+      lt_handles         TYPE bal_t_logh,
+      ls_display_profile TYPE bal_s_prof.
 
 *   get standard display profile
-    call function 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
-      importing
+    CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
+      IMPORTING
         e_s_display_profile = ls_display_profile
-      exceptions
-        others              = 1.
-    if ( sy-subrc ne 0 ) .
-      message id sy-msgid type sy-msgty number sy-msgno
-            with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    endif.
+      EXCEPTIONS
+        OTHERS              = 1.
+
+    IF ( sy-subrc NE 0 ) .
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
 
 
-    call function 'BAL_DSP_LOG_DISPLAY'
-      exporting
+    CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
+      EXPORTING
         i_s_display_profile  = ls_display_profile
         i_t_log_handle       = lt_handles
 *       i_t_msg_handle       =
@@ -184,59 +194,63 @@ class zcl_bal_log implementation.
 *       i_amodal             = space
 *       i_srt_by_timstmp     = space
 *       i_msg_context_filter_operator = 'a'
-*        importing
+*     importing
 *       e_s_exit_command     =
-      exceptions
+      EXCEPTIONS
         profile_inconsistent = 1
         internal_error       = 2
         no_data_available    = 3
         no_authority         = 4
-        others               = 5.
-    if sy-subrc ne 0 .
-      message id sy-msgid type sy-msgty number sy-msgno
-            with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    endif.
+        OTHERS               = 5.
+    IF sy-subrc NE 0 .
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
 
-    free: lt_handles, ls_display_profile .
+    FREE: lt_handles, ls_display_profile .
 
-  endmethod.
-  
-  method EXISTS.
+  ENDMETHOD.
 
-    data:
-      handles type balmsghndl .
 
-    if ( me->gv_handles is not initial ) .
+  METHOD set .
 
-      handles-log_handle = me->gv_handles .
-      handles-msgnumber  = '000001' .
+    DATA:
+      app_log TYPE REF TO zcl_bal_log.
 
-      call function 'BAL_LOG_MSG_READ'
-        exporting
-          i_s_msg_handle                 = handles
-  *       i_langu                        = sy-langu
-  *     importing
-  *       e_s_msg                        =
-  *       e_exists_on_db                 =
-  *       e_txt_msgty                    =
-  *       e_txt_msgid                    =
-  *       e_txt_detlevel                 =
-  *       e_txt_probclass                =
-  *       e_txt_msg                      =
-  *       e_warning_text_not_found       =
-        exceptions
-          log_not_found                  = 1
-          msg_not_found                  = 2
-          others                         = 3 .
+    IF ( object    IS NOT INITIAL ) AND
+       ( subobject IS NOT INITIAL ) .
 
-      value = sy-subrc .
+      CREATE OBJECT app_log
+        EXPORTING
+          title     = title
+          object    = object
+          subobject = subobject
+          alprog    = sy-cprog.
 
-    else .
 
-      value = 9 .
+      IF app_log IS BOUND .
 
-    endif .
+*   Mensagem de exemplo
+*      msg_log-msgty    = 'I' .
+*      msg_log-msgno    = 000 .
+*      msg_log-msgid    = '>0' .
+*      msg_log-msgv1    = 'Informação' .
+*      msg_log-msgv2    = lcl_class=>date( sy-datum ) .
+*      msg_log-msgv3    = lcl_class=>time( sy-uzeit ) .
+*      msg_log-msgv4    = '' .
 
-  endmethod.  
+        app_log->add( msg_log ).
 
-endclass.
+        app_log->save( ) .
+
+      ENDIF .
+
+    ENDIF .
+
+    FREE app_log .
+
+
+  ENDMETHOD .
+
+
+ENDCLASS.
