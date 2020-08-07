@@ -1,4 +1,5 @@
-CLASS zcl_bal_log DEFINITION
+
+CLASS zcl_fi_application_log DEFINITION
   PUBLIC
   FINAL
   CREATE PUBLIC .
@@ -18,13 +19,9 @@ CLASS zcl_bal_log DEFINITION
 
     METHODS show .
 
-    CLASS-METHODS set
-      IMPORTING
-        !title     TYPE bal_s_log-extnumber
-        !object    TYPE bal_s_log-object
-        !subobject TYPE bal_s_log-subobject
-        !alprog    TYPE bal_s_log-alprog
-        !msg_log   TYPE bal_s_msg .
+    METHODS get_handles
+      RETURNING
+        VALUE(value) TYPE balloghndl .
 
   PROTECTED SECTION.
 
@@ -43,7 +40,7 @@ CLASS zcl_bal_log DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_bal_log IMPLEMENTATION.
+CLASS zcl_fi_application_log IMPLEMENTATION.
 
   METHOD constructor .
 
@@ -83,7 +80,6 @@ CLASS zcl_bal_log IMPLEMENTATION.
 
   METHOD add.
 
-*   Cria o Log caso ainda não tenha sido feito
     IF ( gv_handles IS INITIAL ) .
       me->create( CHANGING handles = gv_handles ).
     ENDIF .
@@ -102,9 +98,9 @@ CLASS zcl_bal_log IMPLEMENTATION.
           OTHERS           = 4.
 
       IF ( sy-subrc EQ 0 ) .
-        IF ( gv_object IS NOT INITIAL ) .
-          me->save( ).
-        ENDIF .
+*        IF ( gv_object IS NOT INITIAL ) .
+*          me->save( ).
+*        ENDIF .
       ELSE .
         MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
               WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
@@ -164,10 +160,10 @@ CLASS zcl_bal_log IMPLEMENTATION.
 
   METHOD show.
 
-
     DATA:
       lt_handles         TYPE bal_t_logh,
       ls_display_profile TYPE bal_s_prof.
+
 
 *   get standard display profile
     CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
@@ -175,7 +171,6 @@ CLASS zcl_bal_log IMPLEMENTATION.
         e_s_display_profile = ls_display_profile
       EXCEPTIONS
         OTHERS              = 1.
-
     IF ( sy-subrc NE 0 ) .
       MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
             WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
@@ -194,7 +189,7 @@ CLASS zcl_bal_log IMPLEMENTATION.
 *       i_amodal             = space
 *       i_srt_by_timstmp     = space
 *       i_msg_context_filter_operator = 'a'
-*     importing
+*        importing
 *       e_s_exit_command     =
       EXCEPTIONS
         profile_inconsistent = 1
@@ -212,43 +207,13 @@ CLASS zcl_bal_log IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD set .
+  METHOD get_handles .
 
-    DATA:
-      app_log TYPE REF TO zcl_bal_log.
+    CLEAR value .
 
-    IF ( object    IS NOT INITIAL ) AND
-       ( subobject IS NOT INITIAL ) .
-
-      CREATE OBJECT app_log
-        EXPORTING
-          title     = title
-          object    = object
-          subobject = subobject
-          alprog    = sy-cprog.
-
-
-      IF app_log IS BOUND .
-
-*   Mensagem de exemplo
-*      msg_log-msgty    = 'I' .
-*      msg_log-msgno    = 000 .
-*      msg_log-msgid    = '>0' .
-*      msg_log-msgv1    = 'Informação' .
-*      msg_log-msgv2    = lcl_class=>date( sy-datum ) .
-*      msg_log-msgv3    = lcl_class=>time( sy-uzeit ) .
-*      msg_log-msgv4    = '' .
-
-        app_log->add( msg_log ).
-
-        app_log->save( ) .
-
-      ENDIF .
-
+    IF ( me->gv_handles IS NOT INITIAL ) .
+      value = me->gv_handles .
     ENDIF .
-
-    FREE app_log .
-
 
   ENDMETHOD .
 
