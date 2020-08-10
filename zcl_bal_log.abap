@@ -96,7 +96,7 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
     ls_log-aldate     = sy-datum.
     ls_log-altime     = sy-uzeit.
     ls_log-aluser     = sy-uname.
-*    ls_log-aldate_del = sy-datum + 30.
+*   ls_log-aldate_del = sy-datum + 30.
     ls_log-del_before = abap_true.
     ls_log-alprog     = gv_alprog .
 
