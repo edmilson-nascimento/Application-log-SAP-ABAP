@@ -31,8 +31,7 @@ CLASS zcl_fi_application_log DEFINITION
 
     CLASS-METHODS show_saved
       IMPORTING
-        !lognumber  TYPE balognr    OPTIONAL
-        !lognumbers TYPE bal_t_logn OPTIONAL .
+        !option TYPE i DEFAULT 0 .
 
     METHODS get_lognumber
       RETURNING
@@ -59,10 +58,15 @@ CLASS zcl_fi_application_log DEFINITION
       gv_object    TYPE bal_s_log-object,
       gv_subobject TYPE bal_s_log-subobject,
       gv_alprog    TYPE bal_s_log-alprog,
-      gv_handles   TYPE balloghndl.
+      gv_handles   TYPE balloghndl,
+      gv_lognumber TYPE balognr.
 
     METHODS create
       CHANGING handles TYPE balloghndl .
+
+    METHODS set_lognumber
+      IMPORTING
+        !i_lognumber TYPE balognr .
 
 ENDCLASS.
 
@@ -116,6 +120,16 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
+
+
+  METHOD set_lognumber .
+
+    IF ( i_lognumber IS NOT INITIAL ) .
+      me->gv_lognumber = i_lognumber .
+    ENDIF .
+
+  ENDMETHOD .
+
 
   METHOD add.
 
@@ -182,8 +196,9 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
   METHOD save.
 
     DATA:
-      lt_handles  TYPE bal_t_logh,
-      lv_save_all TYPE boolean.
+      lt_handles       TYPE bal_t_logh,
+      lv_save_all      TYPE boolean,
+      e_new_lognumbers TYPE bal_t_lgnm.
 
     APPEND gv_handles TO lt_handles.
 
@@ -212,15 +227,22 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
 *       i_2th_connection = space
 *       i_2th_connect_commit = space
 *       i_link2job       = 'x'
-*      importing
-*       e_new_lognumbers =
+      IMPORTING
+        e_new_lognumbers = e_new_lognumbers
 *       e_second_connection  =
       EXCEPTIONS
         log_not_found    = 1
         save_not_allowed = 2
         numbering_error  = 3
         OTHERS           = 4.
-    IF ( sy-subrc NE 0 ) .
+
+    IF ( sy-subrc EQ 0 ) .
+
+      IF ( lines( e_new_lognumbers ) GT 0 ) .
+        me->set_lognumber( e_new_lognumbers[ 1 ]-lognumber ) .
+      ENDIF .
+
+    ELSE .
 *      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
 *            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
     ENDIF.
@@ -383,7 +405,7 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
       l_t_locked          TYPE balhdr_t,
       i_s_display_profile TYPE  bal_s_prof,
       l_s_display_profile TYPE bal_s_prof,
-      i_variant_report    TYPE  sy-repid VALUE 'SBAL_DISPLAY',
+*      i_variant_report    TYPE  sy-repid VALUE 'SBAL_DISPLAY',
       number_of_protocols LIKE  sy-dbcnt VALUE 4,
       i_srt_by_timstmp    TYPE  boolean
       .
@@ -409,7 +431,12 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
       IMPORTING
         e_s_log_filter = e_s_log_filter.
 
-
+*if ( handle is initial ) .
+*e_s_log_filter =
+*  value #( log_handle ( handle ) ) ) .
+*ENDIF .
+*
+*E_S_LOG_FILTER-LOG_HANDLE[1]-LOW
 
     CALL FUNCTION 'BAL_DB_SEARCH'
       EXPORTING
@@ -460,19 +487,44 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
     IF NOT i_s_display_profile IS INITIAL.
       l_s_display_profile = i_s_display_profile.
     ELSE.
-      IF number_of_protocols = 1.
-        CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
-          IMPORTING
-            e_s_display_profile = l_s_display_profile
-          EXCEPTIONS
-            OTHERS              = 0.
-      ELSE.
-        CALL FUNCTION 'BAL_DSP_PROFILE_STANDARD_GET'
-          IMPORTING
-            e_s_display_profile = l_s_display_profile
-          EXCEPTIONS
-            OTHERS              = 0.
-      ENDIF.
+
+
+*      IF number_of_protocols = 1.
+*        CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
+*          IMPORTING
+*            e_s_display_profile = l_s_display_profile
+*          EXCEPTIONS
+*            OTHERS              = 0.
+*      ELSE.
+*        CALL FUNCTION 'BAL_DSP_PROFILE_STANDARD_GET'
+*          IMPORTING
+*            e_s_display_profile = l_s_display_profile
+*          EXCEPTIONS
+*            OTHERS              = 0.
+*      ENDIF.
+
+      CASE option .
+        WHEN 0 .
+          CALL FUNCTION 'BAL_DSP_PROFILE_POPUP_GET'
+            IMPORTING
+              e_s_display_profile = l_s_display_profile
+            EXCEPTIONS
+              OTHERS              = 0.
+        WHEN 1 .
+          CALL FUNCTION 'BAL_DSP_PROFILE_STANDARD_GET'
+            IMPORTING
+              e_s_display_profile = l_s_display_profile
+            EXCEPTIONS
+              OTHERS              = 0.
+        WHEN 2 .
+          CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
+            IMPORTING
+              e_s_display_profile = l_s_display_profile
+            EXCEPTIONS
+              OTHERS              = 0.
+        WHEN 3 .
+        WHEN OTHERS .
+      ENDCASE .
     ENDIF.
 
 
@@ -494,9 +546,9 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
 
     CLEAR value .
 
-*    IF ( me->gv_handles IS NOT INITIAL ) .
-*      value = me->gv_handles .
-*    ENDIF .
+    IF ( me->gv_lognumber IS NOT INITIAL ) .
+      value = me->gv_lognumber .
+    ENDIF .
 
   ENDMETHOD .
 
