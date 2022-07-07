@@ -1,79 +1,85 @@
 
-CLASS zcl_fi_application_log DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
+class zcl_application_log definition
+  public
+  final
+  create public .
 
-  PUBLIC SECTION.
+  public section.
 
-    METHODS constructor
-      IMPORTING title     TYPE bal_s_log-extnumber
-                object    TYPE bal_s_log-object    OPTIONAL
-                subobject TYPE bal_s_log-subobject OPTIONAL
-                alprog    TYPE bal_s_log-alprog .
+    methods constructor
+      importing title     type bal_s_log-extnumber
+                object    type bal_s_log-object    optional
+                subobject type bal_s_log-subobject optional
+                alprog    type bal_s_log-alprog .
 
-    METHODS add
-      IMPORTING msg TYPE bal_s_msg .
+    methods add
+      importing msg type bal_s_msg .
 
-    METHODS add_bapiret2
-      IMPORTING
-        !msg       TYPE bapiret2
-      EXPORTING
-        !lognumber TYPE balognr .
+    methods add_bapiret2
+      importing
+        !msg       type bapiret2
+      exporting
+        !lognumber type balognr .
 
-    METHODS add_bapiret2_t
-      IMPORTING
-        !msg TYPE bapiret2_t .
+    methods add_bapiret2_t
+      importing
+        !msg type bapiret2_t .
 
-    METHODS save .
+    methods save .
 
-    METHODS show .
+    methods show .
 
-    CLASS-METHODS show_saved
-      IMPORTING
-        !option TYPE i DEFAULT 0 .
+    class-methods show_saved
+      importing
+        !option type i default 0 .
 
-    METHODS get_lognumber
-      RETURNING
-        VALUE(value) TYPE balognr .
+    methods get_lognumber
+      returning
+        value(value) type balognr .
 
-    CLASS-METHODS data_out
-      IMPORTING
-        !i_data      TYPE sy-datum
-      RETURNING
-        VALUE(value) TYPE char10 .
+    class-methods data_out
+      importing
+        !i_data      type sy-datum
+      returning
+        value(value) type char10 .
 
-    CLASS-METHODS time_out
-      IMPORTING
-        !i_time      TYPE sy-uzeit
-      RETURNING
-        VALUE(value) TYPE char10 .
+    class-methods time_out
+      importing
+        !i_time      type sy-uzeit
+      returning
+        value(value) type char10 .
 
-  PROTECTED SECTION.
+    class-methods save_all
+      importing
+        !it_messages type bapiret2_t
+      returning
+        value(value) type balognr .
 
-  PRIVATE SECTION.
+  protected section.
 
-    CLASS-DATA:
-      gv_title     TYPE bal_s_log-extnumber,
-      gv_object    TYPE bal_s_log-object,
-      gv_subobject TYPE bal_s_log-subobject,
-      gv_alprog    TYPE bal_s_log-alprog,
-      gv_handles   TYPE balloghndl,
-      gv_lognumber TYPE balognr.
+  private section.
 
-    METHODS create
-      CHANGING handles TYPE balloghndl .
+    class-data:
+      gv_title     type bal_s_log-extnumber,
+      gv_object    type bal_s_log-object,
+      gv_subobject type bal_s_log-subobject,
+      gv_alprog    type bal_s_log-alprog,
+      gv_handles   type balloghndl,
+      gv_lognumber type balognr.
 
-    METHODS set_lognumber
-      IMPORTING
-        !i_lognumber TYPE balognr .
+    methods create
+      changing handles type balloghndl .
 
-ENDCLASS.
+    methods set_lognumber
+      importing
+        !i_lognumber type balognr .
+
+endclass.
 
 
-CLASS zcl_fi_application_log IMPLEMENTATION.
+class zcl_application_log implementation.
 
-  METHOD constructor .
+  method constructor .
 
     gv_title     = title .
     gv_object    = object .
@@ -81,18 +87,18 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
     gv_alprog    = alprog .
 
     me->create(
-      CHANGING
+      changing
         handles = gv_handles
     ).
 
-  ENDMETHOD.
+  endmethod.
 
-  METHOD create.
+  method create.
 
-    DATA:
-      ls_log TYPE bal_s_log .
+    data:
+      ls_log type bal_s_log .
 
-    GET TIME.
+    get time.
 
     ls_log-object     = gv_object .
     ls_log-subobject  = gv_subobject.
@@ -105,72 +111,72 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
     ls_log-alprog     = gv_alprog .
 
 *   Create_log.
-    CALL FUNCTION 'BAL_LOG_CREATE'
-      EXPORTING
+    call function 'BAL_LOG_CREATE'
+      exporting
         i_s_log                 = ls_log
-      IMPORTING
+      importing
         e_log_handle            = handles
-      EXCEPTIONS
+      exceptions
         log_header_inconsistent = 1
-        OTHERS                  = 2.
+        others                  = 2.
 
-    IF sy-subrc NE 0 .
-      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    ENDIF.
+    if sy-subrc ne 0 .
+      message id sy-msgid type sy-msgty number sy-msgno
+            with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    endif.
 
-  ENDMETHOD.
+  endmethod.
 
 
-  METHOD set_lognumber .
+  method set_lognumber .
 
-    IF ( i_lognumber IS NOT INITIAL ) .
+    if ( i_lognumber is not initial ) .
       me->gv_lognumber = i_lognumber .
-    ENDIF .
+    endif .
 
-  ENDMETHOD .
+  endmethod .
 
 
-  METHOD add.
+  method add.
 
-    IF ( gv_handles IS INITIAL ) .
-      me->create( CHANGING handles = gv_handles ).
-    ENDIF .
+    if ( gv_handles is initial ) .
+      me->create( changing handles = gv_handles ).
+    endif .
 
-    IF ( gv_handles IS NOT INITIAL ) .
+    if ( gv_handles is not initial ) .
 
-      CALL FUNCTION 'BAL_LOG_MSG_ADD'
-        EXPORTING
+      call function 'BAL_LOG_MSG_ADD'
+        exporting
           i_log_handle     = gv_handles
 *         i_s_msg          = messages
           i_s_msg          = msg
-        EXCEPTIONS
+        exceptions
           log_not_found    = 1
           msg_inconsistent = 2
           log_is_full      = 3
-          OTHERS           = 4.
+          others           = 4.
 
-      IF ( sy-subrc EQ 0 ) .
+      if ( sy-subrc eq 0 ) .
 *        IF ( gv_object IS NOT INITIAL ) .
 *          me->save( ).
 *        ENDIF .
-      ELSE .
-        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-              WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-      ENDIF.
-    ENDIF.
+      else .
+        message id sy-msgid type sy-msgty number sy-msgno
+              with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+      endif.
+    endif.
 
-  ENDMETHOD.
+  endmethod.
 
 
-  METHOD add_bapiret2 .
+  method add_bapiret2 .
 
-    DATA:
-      msg_bal TYPE bal_s_msg .
+    data:
+      msg_bal type bal_s_msg .
 
-    CLEAR lognumber .
+    clear lognumber .
 
-    IF ( msg IS NOT INITIAL ) .
+    if ( msg is not initial ) .
 
       msg_bal-msgty = msg-type .
       msg_bal-msgno = msg-number .
@@ -184,42 +190,42 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
       lognumber = me->get_lognumber( ) .
       me->save( ).
 
-    ENDIF .
+    endif .
 
-  ENDMETHOD .
-
-
-  METHOD add_bapiret2_t .
-  ENDMETHOD .
+  endmethod .
 
 
-  METHOD save.
+  method add_bapiret2_t .
+  endmethod .
 
-    DATA:
-      lt_handles       TYPE bal_t_logh,
-      lv_save_all      TYPE boolean,
-      e_new_lognumbers TYPE bal_t_lgnm.
 
-    APPEND gv_handles TO lt_handles.
+  method save.
 
-    CALL FUNCTION 'BAL_DB_SAVE_PREPARE'
-      EXPORTING
+    data:
+      lt_handles       type bal_t_logh,
+      lv_save_all      type boolean,
+      e_new_lognumbers type bal_t_lgnm.
+
+    append gv_handles to lt_handles.
+
+    call function 'BAL_DB_SAVE_PREPARE'
+      exporting
         i_replace_in_all_logs = abap_on
 *       i_t_replace_in_these_logs     =
 *       i_t_replace_message_variables =
 *       i_t_replace_context_fields    =
-      EXCEPTIONS
+      exceptions
         log_not_found         = 1
-        OTHERS                = 2.
+        others                = 2.
 
-    IF ( sy-subrc NE 0 ) .
+    if ( sy-subrc ne 0 ) .
 *      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
 *            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    ENDIF.
+    endif.
 
 
-    CALL FUNCTION 'BAL_DB_SAVE'
-      EXPORTING
+    call function 'BAL_DB_SAVE'
+      exporting
         i_client         = sy-mandt
 *       i_in_update_task = space
         i_save_all       = lv_save_all
@@ -227,52 +233,52 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
 *       i_2th_connection = space
 *       i_2th_connect_commit = space
 *       i_link2job       = 'x'
-      IMPORTING
+      importing
         e_new_lognumbers = e_new_lognumbers
 *       e_second_connection  =
-      EXCEPTIONS
+      exceptions
         log_not_found    = 1
         save_not_allowed = 2
         numbering_error  = 3
-        OTHERS           = 4.
+        others           = 4.
 
-    IF ( sy-subrc EQ 0 ) .
+    if ( sy-subrc eq 0 ) .
 
-      IF ( lines( e_new_lognumbers ) GT 0 ) .
+      if ( lines( e_new_lognumbers ) gt 0 ) .
         me->set_lognumber( e_new_lognumbers[ 1 ]-lognumber ) .
-      ENDIF .
+      endif .
 
-    ELSE .
+    else .
 *      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
 *            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    ENDIF.
+    endif.
 
-    FREE lt_handles .
+    free lt_handles .
 
-  ENDMETHOD.
+  endmethod.
 
 
-  METHOD show.
+  method show.
 
-    DATA:
-      lt_handles         TYPE bal_t_logh,
-      ls_display_profile TYPE bal_s_prof.
+    data:
+      lt_handles         type bal_t_logh,
+      ls_display_profile type bal_s_prof.
 
 
 *   get standard display profile
-    CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
-      IMPORTING
+    call function 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
+      importing
         e_s_display_profile = ls_display_profile
-      EXCEPTIONS
-        OTHERS              = 1.
-    IF ( sy-subrc NE 0 ) .
-      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    ENDIF.
+      exceptions
+        others              = 1.
+    if ( sy-subrc ne 0 ) .
+      message id sy-msgid type sy-msgty number sy-msgno
+            with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    endif.
 
 
-    CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
-      EXPORTING
+    call function 'BAL_DSP_LOG_DISPLAY'
+      exporting
         i_s_display_profile  = ls_display_profile
         i_t_log_handle       = lt_handles
 *       i_t_msg_handle       =
@@ -285,23 +291,23 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
 *       i_msg_context_filter_operator = 'a'
 *        importing
 *       e_s_exit_command     =
-      EXCEPTIONS
+      exceptions
         profile_inconsistent = 1
         internal_error       = 2
         no_data_available    = 3
         no_authority         = 4
-        OTHERS               = 5.
-    IF sy-subrc NE 0 .
-      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-            WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
-    ENDIF.
+        others               = 5.
+    if sy-subrc ne 0 .
+      message id sy-msgid type sy-msgty number sy-msgno
+            with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    endif.
 
-    FREE: lt_handles, ls_display_profile .
+    free: lt_handles, ls_display_profile .
 
-  ENDMETHOD.
+  endmethod.
 
 
-  METHOD show_saved.
+  method show_saved.
 
 *    DATA:
 *      lt_handles         TYPE bal_t_logh,
@@ -393,27 +399,27 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
 
 
 
-    DATA:
-      t_lognumber         TYPE bal_t_logn,
+    data:
+      t_lognumber         type bal_t_logn,
 
-      e_s_log_filter      TYPE bal_s_lfil,
-      l_t_log_header      TYPE balhdr_t,
-      l_t_log_handle      TYPE bal_t_logh,
-      i_log_handle        TYPE balloghndl,
-      read_from_db_hdr(1) TYPE c,
-      l_t_log_loaded      TYPE bal_t_logh,
-      l_t_locked          TYPE balhdr_t,
-      i_s_display_profile TYPE  bal_s_prof,
-      l_s_display_profile TYPE bal_s_prof,
+      e_s_log_filter      type bal_s_lfil,
+      l_t_log_header      type balhdr_t,
+      l_t_log_handle      type bal_t_logh,
+      i_log_handle        type balloghndl,
+      read_from_db_hdr(1) type c,
+      l_t_log_loaded      type bal_t_logh,
+      l_t_locked          type balhdr_t,
+      i_s_display_profile type  bal_s_prof,
+      l_s_display_profile type bal_s_prof,
 *      i_variant_report    TYPE  sy-repid VALUE 'SBAL_DISPLAY',
-      number_of_protocols LIKE  sy-dbcnt VALUE 4,
-      i_srt_by_timstmp    TYPE  boolean
+      number_of_protocols like  sy-dbcnt value 4,
+      i_srt_by_timstmp    type  boolean
       .
 
-    t_lognumber = VALUE bal_t_logn( ( '00000000000001268738' ) ) .
+    t_lognumber = value bal_t_logn( ( '00000000000001268738' ) ) .
 
-    CALL FUNCTION 'BAL_FILTER_CREATE'
-      EXPORTING
+    call function 'BAL_FILTER_CREATE'
+      exporting
 *       i_object       = object
 *       i_subobject    = subobject
 *       i_extnumber    = '00qwPT6L7jgsjQu6zl7SuW'
@@ -428,7 +434,7 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
 *       i_aluser       = i_aluser
 *       i_almode       = i_almode
         i_t_lognumber  = t_lognumber
-      IMPORTING
+      importing
         e_s_log_filter = e_s_log_filter.
 
 *if ( handle is initial ) .
@@ -438,55 +444,55 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
 *
 *E_S_LOG_FILTER-LOG_HANDLE[1]-LOW
 
-    CALL FUNCTION 'BAL_DB_SEARCH'
-      EXPORTING
+    call function 'BAL_DB_SEARCH'
+      exporting
 *       i_client           = SY-MANDT
         i_s_log_filter     = e_s_log_filter
 *       i_t_sel_field      = i_t_sel_field
 *       i_tzone            = i_tzone
-      IMPORTING
+      importing
         e_t_log_header     = l_t_log_header
-      EXCEPTIONS
+      exceptions
         log_not_found      = 1
         no_filter_criteria = 2
-        OTHERS             = 3.
-    IF sy-subrc <> 0.
-    ENDIF.
+        others             = 3.
+    if sy-subrc <> 0.
+    endif.
 
-    CLEAR l_t_log_handle.
-    LOOP AT l_t_log_header ASSIGNING FIELD-SYMBOL(<l_s_log_header>) .
-      CALL FUNCTION 'BAL_LOG_EXIST'
-        EXPORTING
+    clear l_t_log_handle.
+    loop at l_t_log_header assigning field-symbol(<l_s_log_header>) .
+      call function 'BAL_LOG_EXIST'
+        exporting
           i_log_handle  = <l_s_log_header>-log_handle
-        EXCEPTIONS
+        exceptions
           log_not_found = 1.
-      IF sy-subrc = 0.
-        INSERT <l_s_log_header>-log_handle INTO TABLE l_t_log_handle.
-        DELETE l_t_log_header.
-      ENDIF.
-    ENDLOOP.
+      if sy-subrc = 0.
+        insert <l_s_log_header>-log_handle into table l_t_log_handle.
+        delete l_t_log_header.
+      endif.
+    endloop.
 
 
-    CALL FUNCTION 'BAL_DB_LOAD'
-      EXPORTING
+    call function 'BAL_DB_LOAD'
+      exporting
         i_t_log_header         = l_t_log_header
         i_do_not_load_messages = read_from_db_hdr
         i_lock_handling        = 1
-      IMPORTING
+      importing
         e_t_log_handle         = l_t_log_loaded
         e_t_locked             = l_t_locked
-      EXCEPTIONS
-        OTHERS                 = 0.
-    INSERT LINES OF l_t_log_loaded INTO TABLE l_t_log_handle.
+      exceptions
+        others                 = 0.
+    insert lines of l_t_log_loaded into table l_t_log_handle.
 
-    DESCRIBE TABLE l_t_locked LINES sy-tfill.
-    IF sy-tfill > 0.
-      MESSAGE s263(bl) WITH sy-tfill.
-    ENDIF.
+    describe table l_t_locked lines sy-tfill.
+    if sy-tfill > 0.
+      message s263(bl) with sy-tfill.
+    endif.
 
-    IF NOT i_s_display_profile IS INITIAL.
+    if not i_s_display_profile is initial.
       l_s_display_profile = i_s_display_profile.
-    ELSE.
+    else.
 
 
 *      IF number_of_protocols = 1.
@@ -503,84 +509,133 @@ CLASS zcl_fi_application_log IMPLEMENTATION.
 *            OTHERS              = 0.
 *      ENDIF.
 
-      CASE option .
-        WHEN 0 .
-          CALL FUNCTION 'BAL_DSP_PROFILE_POPUP_GET'
-            IMPORTING
+      case option .
+        when 0 .
+          call function 'BAL_DSP_PROFILE_POPUP_GET'
+            importing
               e_s_display_profile = l_s_display_profile
-            EXCEPTIONS
-              OTHERS              = 0.
-        WHEN 1 .
-          CALL FUNCTION 'BAL_DSP_PROFILE_STANDARD_GET'
-            IMPORTING
+            exceptions
+              others              = 0.
+        when 1 .
+          call function 'BAL_DSP_PROFILE_STANDARD_GET'
+            importing
               e_s_display_profile = l_s_display_profile
-            EXCEPTIONS
-              OTHERS              = 0.
-        WHEN 2 .
-          CALL FUNCTION 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
-            IMPORTING
+            exceptions
+              others              = 0.
+        when 2 .
+          call function 'BAL_DSP_PROFILE_SINGLE_LOG_GET'
+            importing
               e_s_display_profile = l_s_display_profile
-            EXCEPTIONS
-              OTHERS              = 0.
-        WHEN 3 .
-        WHEN OTHERS .
-      ENDCASE .
-    ENDIF.
+            exceptions
+              others              = 0.
+        when 3 .
+        when others .
+      endcase .
+    endif.
 
 
-    CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
-      EXPORTING
+    call function 'BAL_DSP_LOG_DISPLAY'
+      exporting
         i_t_log_handle      = l_t_log_handle
         i_s_display_profile = l_s_display_profile
         i_srt_by_timstmp    = i_srt_by_timstmp
-      EXCEPTIONS
+      exceptions
         no_authority        = 1
-        OTHERS              = 2.
-    IF sy-subrc <> 0.
-    ENDIF.
+        others              = 2.
+    if sy-subrc <> 0.
+    endif.
 
-  ENDMETHOD.
+  endmethod.
 
 
-  METHOD get_lognumber .
+  method get_lognumber .
 
-    CLEAR value .
+    clear value .
 
-    IF ( me->gv_lognumber IS NOT INITIAL ) .
+    if ( me->gv_lognumber is not initial ) .
       value = me->gv_lognumber .
-    ENDIF .
+    endif .
 
-  ENDMETHOD .
+  endmethod .
 
 
-  METHOD data_out .
+  method data_out .
 
-    CLEAR value .
+    clear value .
 
-    IF ( i_data IS NOT INITIAL ) .
+    if ( i_data is not initial ) .
 
-      CALL FUNCTION 'CONVERSION_EXIT_PDATE_OUTPUT'
-        EXPORTING
+      call function 'CONVERSION_EXIT_PDATE_OUTPUT'
+        exporting
           input  = i_data
-        IMPORTING
+        importing
           output = value.
 
-    ENDIF .
+    endif .
 
-  ENDMETHOD .
-
-
-  METHOD time_out .
-
-    CLEAR value .
-
-    IF ( i_time IS NOT INITIAL ) .
-
-      WRITE i_time TO value USING EDIT MASK '__:__:__' .
-
-    ENDIF .
-
-  ENDMETHOD .
+  endmethod .
 
 
-ENDCLASS.
+  method time_out .
+
+    clear value .
+
+    if ( i_time is not initial ) .
+
+      write i_time to value using edit mask '__:__:__' .
+
+    endif .
+
+  endmethod .
+
+
+  method save_all .
+
+
+    data:
+      title     type balnrext  value 'Log de Kanban',
+      object    type balobj_d  value 'ZPP',
+      subobject type balsubobj value 'ZPP0001'.
+      app_log        type ref to zcl_fi_application_log,
+      msg_log        type bal_s_msg,
+      saved_message  type balloghndl,
+      saved_messages type bapiret2_t.
+
+    if ( object    is not initial ) and
+       ( subobject is not initial ) .
+
+      create object app_log
+        exporting
+          title     = title
+          object    = object
+          subobject = subobject
+          alprog    = sy-cprog.
+
+
+      if app_log is bound .
+
+        msg_log-msgty    = '' .
+        msg_log-msgno    = 000 .
+        msg_log-msgid    = '>0' .
+        msg_log-msgv1    = 'Warning' .
+        msg_log-msgv2    = sy-datum  .
+        msg_log-msgv3    = sy-uzeit  .
+        msg_log-msgv4    = app_log->get_handles( ) .
+        saved_message    = app_log->get_handles( ) .
+
+        app_log->add( msg_log ).
+
+        app_log->save( ) .
+
+        free app_log .
+
+      endif .
+
+    endif .
+
+    free app_log .
+
+  endmethod .
+
+
+endclass.
