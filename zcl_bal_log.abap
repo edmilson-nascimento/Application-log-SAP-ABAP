@@ -100,7 +100,7 @@ class zcl_application_log implementation.
     data:
       ls_log type bal_s_log .
 
-    get time.
+   "get time.
 
     ls_log-object     = gv_object .
     ls_log-subobject  = gv_subobject.
@@ -112,7 +112,7 @@ class zcl_application_log implementation.
     ls_log-del_before = abap_true.
     ls_log-alprog     = gv_alprog .
 
-*   Create_log.
+    " Create_log.
     call function 'BAL_LOG_CREATE'
       exporting
         i_s_log                 = ls_log
@@ -126,6 +126,18 @@ class zcl_application_log implementation.
       message id sy-msgid type sy-msgty number sy-msgno
             with sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
     endif.
+
+    call function 'BAL_DB_LOGNUMBER_GET'
+      exporting
+*       i_client                 = SY-MANDT
+        i_log_handle             = handles
+      importing
+        e_lognumber              = me->gv_lognumber
+      exceptions
+        log_not_found            = 1
+        lognumber_already_exists = 2
+        numbering_error          = 3
+        others                   = 4.
 
   endmethod.
 
