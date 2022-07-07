@@ -17,9 +17,9 @@ class zcl_application_log definition
 
     methods add_bapiret2
       importing
-        !msg       type bapiret2
+        !is_msg       type bapiret2
       exporting
-        !lognumber type balognr .
+        !ev_lognumber type balognr .
 
     methods add_bapiret2_t
       importing
@@ -53,7 +53,7 @@ class zcl_application_log definition
 
     class-methods save_all
       importing
-        !it_messages type bapiret2_t
+        !it_messages    type bapiret2_t
       returning
         value(rv_value) type balognr .
 
@@ -176,21 +176,19 @@ class zcl_application_log implementation.
     data:
       msg_bal type bal_s_msg .
 
-    clear lognumber .
+    clear ev_lognumber .
 
-    if ( msg is not initial ) .
+    if ( is_msg is not initial ) .
 
-      msg_bal-msgty = msg-type .
-      msg_bal-msgno = msg-number .
-      msg_bal-msgid = msg-id .
-      msg_bal-msgv1 = msg-message_v1 .
-      msg_bal-msgv2 = msg-message_v2 .
-      msg_bal-msgv3 = msg-message_v3 .
-      msg_bal-msgv4 = msg-message_v4 .
+      msg_bal-msgty = is_msg-type .
+      msg_bal-msgno = is_msg-number .
+      msg_bal-msgid = is_msg-id .
+      msg_bal-msgv1 = is_msg-message_v1 .
+      msg_bal-msgv2 = is_msg-message_v2 .
+      msg_bal-msgv3 = is_msg-message_v3 .
+      msg_bal-msgv4 = is_msg-message_v4 .
 
       me->add( msg = msg_bal ) .
-*      lognumber = me->get_lognumber( ) .
-*      me->save( ).
 
     endif .
 
@@ -199,9 +197,9 @@ class zcl_application_log implementation.
 
   method add_bapiret2_t .
 
-  loop at msg into data(ls_message) .
-  me->add_bapiret2( msg = ls_message ) .
-  endloop .
+    loop at msg into data(ls_message) .
+      me->add_bapiret2( is_msg = ls_message ) .
+    endloop .
 
     rv_value = me->get_lognumber( ) .
 
@@ -602,17 +600,16 @@ class zcl_application_log implementation.
 
 
     data:
-      title     type balnrext  value 'Log de Kanban',
-      object    type balobj_d  value 'ZPP',
-      subobject type balsubobj value 'ZPP0001',
-      app_log   type ref to zcl_application_log.
+      lv_title     type balnrext  value 'Log de Kanban',
+      lv_object    type balobj_d  value 'ZPP',
+      lv_subobject type balsubobj value 'ZPP0001'.
 
-    if ( object    is not initial ) and
-       ( subobject is not initial ) .
+    if ( lv_object    is not initial ) and
+       ( lv_subobject is not initial ) .
 
-      data(lo_app) = new zcl_application_log( title     = title
-                                              object    = object
-                                              subobject = subobject
+      data(lo_app) = new zcl_application_log( title     = lv_title
+                                              object    = lv_object
+                                              subobject = lv_subobject
                                               alprog    = sy-cprog ) .
 
       if ( lo_app is bound ) .
@@ -626,8 +623,6 @@ class zcl_application_log implementation.
       endif .
 
     endif .
-
-    free app_log .
 
   endmethod .
 
