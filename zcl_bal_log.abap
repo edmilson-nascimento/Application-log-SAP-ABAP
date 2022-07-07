@@ -595,39 +595,24 @@ class zcl_application_log implementation.
     data:
       title     type balnrext  value 'Log de Kanban',
       object    type balobj_d  value 'ZPP',
-      subobject type balsubobj value 'ZPP0001'.
-      app_log        type ref to zcl_fi_application_log,
-      msg_log        type bal_s_msg,
-      saved_message  type balloghndl,
-      saved_messages type bapiret2_t.
+      subobject type balsubobj value 'ZPP0001',
+      app_log   type ref to zcl_application_log.
 
     if ( object    is not initial ) and
        ( subobject is not initial ) .
 
-      create object app_log
-        exporting
-          title     = title
-          object    = object
-          subobject = subobject
-          alprog    = sy-cprog.
+      data(lo_app) = new zcl_application_log( title     = title
+                                              object    = object
+                                              subobject = subobject
+                                              alprog    = sy-cprog ) .
 
+      if ( lo_app is bound ) .
 
-      if app_log is bound .
+        lo_app->add_bapiret2_t( it_messages ) .
 
-        msg_log-msgty    = '' .
-        msg_log-msgno    = 000 .
-        msg_log-msgid    = '>0' .
-        msg_log-msgv1    = 'Warning' .
-        msg_log-msgv2    = sy-datum  .
-        msg_log-msgv3    = sy-uzeit  .
-        msg_log-msgv4    = app_log->get_handles( ) .
-        saved_message    = app_log->get_handles( ) .
+        lo_app->save( ) .
 
-        app_log->add( msg_log ).
-
-        app_log->save( ) .
-
-        free app_log .
+        free lo_app .
 
       endif .
 
