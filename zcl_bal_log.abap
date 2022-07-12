@@ -39,6 +39,12 @@ class zcl_application_log definition
       returning
         value(value) type balognr .
 
+    methods get_handle_saved
+      importing
+        !iv_lognumber   type balhdr-lognumber
+      returning
+        value(rv_value) type balhdr-log_handle .
+
     class-methods data_out
       importing
         !i_data      type sy-datum
@@ -100,7 +106,7 @@ class zcl_application_log implementation.
     data:
       ls_log type bal_s_log .
 
-   "get time.
+    "get time.
 
     ls_log-object     = gv_object .
     ls_log-subobject  = gv_subobject.
@@ -577,6 +583,43 @@ class zcl_application_log implementation.
 
   endmethod .
 
+
+  method get_handle_saved .
+
+    data:
+      lt_lognumbers  type szal_lognumbers,
+      lt_header_data type table of balhdr.
+
+    clear rv_value .
+
+    if ( iv_lognumber is not initial ) .
+
+
+      call function 'APPL_LOG_READ_DB_WITH_LOGNO'
+*        exporting
+*          put_into_memory    = SPACE
+*        importing
+*          number_of_logs     =
+        tables
+          lognumbers  = lt_lognumbers
+          header_data = lt_header_data
+*         header_parameters  =
+*         messages    =
+*         message_parameters =
+*         contexts    =
+*         t_exceptions       =
+        .
+
+      if ( lines( lt_header_data ) gt 0 ) .
+
+        rv_value = value #( lt_header_data[ 1 ]-log_handle optional ) .
+
+      endif .
+
+    endif .
+
+
+  endmethod .
 
   method data_out .
 
