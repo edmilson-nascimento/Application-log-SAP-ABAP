@@ -15,17 +15,18 @@ class zcl_application_log definition
         !iv_alprog    type bal_s_log-alprog .
 
     methods add
-      importing msg type bal_s_msg .
+      importing
+        !is_message type bal_s_msg .
 
     methods add_bapiret2
       importing
-        !is_msg       type bapiret2
+        !is_message   type bapiret2
       exporting
         !ev_lognumber type balognr .
 
     methods add_bapiret2_t
       importing
-        !msg            type bapiret2_t
+        !it_messages    type bapiret2_t
       returning
         value(rv_value) type balognr .
 
@@ -35,11 +36,12 @@ class zcl_application_log definition
 
     class-methods show_saved
       importing
-        !option type i default 0 .
+        !iv_lognumber type balhdr-lognumber
+        !option       type i default 0 .
 
     methods get_lognumber
       returning
-        value(value) type balognr .
+        value(rv_value) type balognr .
 
     methods get_handle_saved
       importing
@@ -79,11 +81,12 @@ class zcl_application_log definition
       gv_lognumber type balognr.
 
     methods create
-      changing handles type balloghndl .
+      changing
+        !cv_handle type balloghndl .
 
     methods set_lognumber
       importing
-        !i_lognumber type balognr .
+        !iv_lognumber type balognr .
 
 endclass.
 
@@ -102,13 +105,13 @@ class zcl_application_log implementation.
 
       me->get_handle_saved( iv_lognumber = iv_lognumber ).
 
-      gv_title     = iv_title .
-      gv_object    = iv_object .
-      gv_subobject = iv_subobject .
-      gv_alprog    = iv_alprog .
+      me->gv_title     = iv_title .
+      me->gv_object    = iv_object .
+      me->gv_subobject = iv_subobject .
+      me->gv_alprog    = iv_alprog .
 
     else .
-      me->create( changing handles = gv_handle ) .
+      me->create( changing cv_handle = gv_handle ) .
     endif .
 
 
@@ -121,7 +124,6 @@ class zcl_application_log implementation.
       ls_log type bal_s_log .
 
     "get time.
-
     ls_log-object     = gv_object .
     ls_log-subobject  = gv_subobject.
     ls_log-extnumber  = gv_title .
@@ -137,7 +139,7 @@ class zcl_application_log implementation.
       exporting
         i_s_log                 = ls_log
       importing
-        e_log_handle            = handles
+        e_log_handle            = cv_handle
       exceptions
         log_header_inconsistent = 1
         others                  = 2.
@@ -150,7 +152,7 @@ class zcl_application_log implementation.
     call function 'BAL_DB_LOGNUMBER_GET'
       exporting
 *       i_client                 = SY-MANDT
-        i_log_handle             = handles
+        i_log_handle             = cv_handle
       importing
         e_lognumber              = me->gv_lognumber
       exceptions
@@ -164,8 +166,8 @@ class zcl_application_log implementation.
 
   method set_lognumber .
 
-    if ( i_lognumber is not initial ) .
-      me->gv_lognumber = i_lognumber .
+    if ( iv_lognumber is not initial ) .
+      me->gv_lognumber = iv_lognumber .
     endif .
 
   endmethod .
@@ -174,7 +176,7 @@ class zcl_application_log implementation.
   method add.
 
     if ( gv_handle is initial ) .
-      me->create( changing handles = gv_handle ).
+      me->create( changing cv_handle = gv_handle ).
     endif .
 
     if ( gv_handle is not initial ) .
@@ -183,7 +185,7 @@ class zcl_application_log implementation.
         exporting
           i_log_handle     = gv_handle
 *         i_s_msg          = messages
-          i_s_msg          = msg
+          i_s_msg          = is_message
         exceptions
           log_not_found    = 1
           msg_inconsistent = 2
@@ -210,17 +212,17 @@ class zcl_application_log implementation.
 
     clear ev_lognumber .
 
-    if ( is_msg is not initial ) .
+    if ( is_message is not initial ) .
 
-      msg_bal-msgty = is_msg-type .
-      msg_bal-msgno = is_msg-number .
-      msg_bal-msgid = is_msg-id .
-      msg_bal-msgv1 = is_msg-message_v1 .
-      msg_bal-msgv2 = is_msg-message_v2 .
-      msg_bal-msgv3 = is_msg-message_v3 .
-      msg_bal-msgv4 = is_msg-message_v4 .
+      msg_bal-msgty = is_message-type .
+      msg_bal-msgno = is_message-number .
+      msg_bal-msgid = is_message-id .
+      msg_bal-msgv1 = is_message-message_v1 .
+      msg_bal-msgv2 = is_message-message_v2 .
+      msg_bal-msgv3 = is_message-message_v3 .
+      msg_bal-msgv4 = is_message-message_v4 .
 
-      me->add( msg = msg_bal ) .
+      me->add( is_message = msg_bal ) .
 
     endif .
 
@@ -229,8 +231,8 @@ class zcl_application_log implementation.
 
   method add_bapiret2_t .
 
-    loop at msg into data(ls_message) .
-      me->add_bapiret2( is_msg = ls_message ) .
+    loop at it_messages into data(ls_message) .
+      me->add_bapiret2( is_message = ls_message ) .
     endloop .
 
     rv_value = me->get_lognumber( ) .
@@ -455,50 +457,78 @@ class zcl_application_log implementation.
       i_srt_by_timstmp    type  boolean
       .
 
-    t_lognumber = value bal_t_logn( ( '00000000000001268738' ) ) .
+    t_lognumber = value bal_t_logn( ( '00000000000411051200' ) ) .
 
-    call function 'BAL_FILTER_CREATE'
-      exporting
-*       i_object       = object
-*       i_subobject    = subobject
-*       i_extnumber    = '00qwPT6L7jgsjQu6zl7SuW'
-*       i_aldate_from  = sy-datum
-*       i_aldate_to    = sy-datum
-*       i_altime_from  = i_altime_from
-*       i_altime_to    = i_altime_to
-*       i_probclass_from = i_probclass_from
-*       i_probclass_to = i_probclass_to
-*       i_alprog       = i_alprog
-*       i_altcode      = i_altcode
-*       i_aluser       = i_aluser
-*       i_almode       = i_almode
-        i_t_lognumber  = t_lognumber
-      importing
-        e_s_log_filter = e_s_log_filter.
-
-*if ( handle is initial ) .
-*e_s_log_filter =
-*  value #( log_handle ( handle ) ) ) .
-*ENDIF .
+*    call function 'BAL_FILTER_CREATE'
+*      exporting
+**       i_object       = object
+**       i_subobject    = subobject
+**       i_extnumber    = '00qwPT6L7jgsjQu6zl7SuW'
+**       i_aldate_from  = sy-datum
+**       i_aldate_to    = sy-datum
+**       i_altime_from  = i_altime_from
+**       i_altime_to    = i_altime_to
+**       i_probclass_from = i_probclass_from
+**       i_probclass_to = i_probclass_to
+**       i_alprog       = i_alprog
+**       i_altcode      = i_altcode
+**       i_aluser       = i_aluser
+**       i_almode       = i_almode
+*        i_t_lognumber  = t_lognumber
+*      importing
+*        e_s_log_filter = e_s_log_filter.
 *
-*E_S_LOG_FILTER-LOG_HANDLE[1]-LOW
+**if ( handle is initial ) .
+**e_s_log_filter =
+**  value #( log_handle ( handle ) ) ) .
+**ENDIF .
+**
+**E_S_LOG_FILTER-LOG_HANDLE[1]-LOW
+*
+*    call function 'BAL_DB_SEARCH'
+*      exporting
+**       i_client           = SY-MANDT
+*        i_s_log_filter     = e_s_log_filter
+**       i_t_sel_field      = i_t_sel_field
+**       i_tzone            = i_tzone
+*      importing
+*        e_t_log_header     = l_t_log_header
+*      exceptions
+*        log_not_found      = 1
+*        no_filter_criteria = 2
+*        others             = 3.
+*    if sy-subrc <> 0.
+*    endif.
 
-    call function 'BAL_DB_SEARCH'
-      exporting
-*       i_client           = SY-MANDT
-        i_s_log_filter     = e_s_log_filter
-*       i_t_sel_field      = i_t_sel_field
-*       i_tzone            = i_tzone
-      importing
-        e_t_log_header     = l_t_log_header
-      exceptions
-        log_not_found      = 1
-        no_filter_criteria = 2
-        others             = 3.
-    if sy-subrc <> 0.
-    endif.
+
+
+    data:
+      lt_lognumbers  type szal_lognumbers,
+      lt_header_data type table of balhdr.
+
+    if ( iv_lognumber is not initial ) .
+      lt_lognumbers = value #( ( item = iv_lognumber ) ) .
+    else .
+      lt_lognumbers = value #( ( item = '00000000000411051200' ) ) .
+    endif .
+
+    call function 'APPL_LOG_READ_DB_WITH_LOGNO'
+*      exporting
+*        put_into_memory    = SPACE
+*      importing
+*        number_of_logs     =
+      tables
+        lognumbers  = lt_lognumbers
+        header_data = lt_header_data
+*       header_parameters  =
+*       messages    =
+*       message_parameters =
+*       contexts    =
+*       t_exceptions       =
+      .
 
     clear l_t_log_handle.
+    "loop at l_t_log_header assigning field-symbol(<l_s_log_header>) .
     loop at l_t_log_header assigning field-symbol(<l_s_log_header>) .
       call function 'BAL_LOG_EXIST'
         exporting
@@ -589,10 +619,10 @@ class zcl_application_log implementation.
 
   method get_lognumber .
 
-    clear value .
+    clear rv_value .
 
     if ( me->gv_lognumber is not initial ) .
-      value = me->gv_lognumber .
+      rv_value = me->gv_lognumber .
     endif .
 
   endmethod .
