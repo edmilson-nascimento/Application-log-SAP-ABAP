@@ -59,6 +59,7 @@ class zcl_application_log definition
 
     class-methods save_all
       importing
+        !iv_lognumber   type balhdr-lognumber optional
         !it_messages    type bapiret2_t
       returning
         value(rv_value) type balognr .
@@ -72,7 +73,7 @@ class zcl_application_log definition
       gv_object    type bal_s_log-object,
       gv_subobject type bal_s_log-subobject,
       gv_alprog    type bal_s_log-alprog,
-      gv_handles   type balloghndl,
+      gv_handle    type balloghndl,
       gv_lognumber type balognr.
 
     methods create
@@ -96,7 +97,7 @@ class zcl_application_log implementation.
 
     me->create(
       changing
-        handles = gv_handles
+        handles = gv_handle
     ).
 
   endmethod.
@@ -159,15 +160,15 @@ class zcl_application_log implementation.
 
   method add.
 
-    if ( gv_handles is initial ) .
-      me->create( changing handles = gv_handles ).
+    if ( gv_handle is initial ) .
+      me->create( changing handles = gv_handle ).
     endif .
 
-    if ( gv_handles is not initial ) .
+    if ( gv_handle is not initial ) .
 
       call function 'BAL_LOG_MSG_ADD'
         exporting
-          i_log_handle     = gv_handles
+          i_log_handle     = gv_handle
 *         i_s_msg          = messages
           i_s_msg          = msg
         exceptions
@@ -231,7 +232,7 @@ class zcl_application_log implementation.
       lv_save_all      type boolean,
       e_new_lognumbers type bal_t_lgnm.
 
-    append gv_handles to lt_handles.
+    append gv_handle to lt_handles.
 
     call function 'BAL_DB_SAVE_PREPARE'
       exporting
