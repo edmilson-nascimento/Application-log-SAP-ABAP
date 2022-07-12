@@ -7,10 +7,12 @@ class zcl_application_log definition
   public section.
 
     methods constructor
-      importing title     type bal_s_log-extnumber
-                object    type bal_s_log-object    optional
-                subobject type bal_s_log-subobject optional
-                alprog    type bal_s_log-alprog .
+      importing
+        !iv_title     type bal_s_log-extnumber
+        !iv_object    type bal_s_log-object    optional
+        !iv_subobject type bal_s_log-subobject optional
+        !iv_lognumber type balhdr-lognumber optional
+        !iv_alprog    type bal_s_log-alprog .
 
     methods add
       importing msg type bal_s_msg .
@@ -88,19 +90,30 @@ endclass.
 
 class zcl_application_log implementation.
 
+
   method constructor .
 
-    gv_title     = title .
-    gv_object    = object .
-    gv_subobject = subobject .
-    gv_alprog    = alprog .
+    gv_title     = iv_title .
+    gv_object    = iv_object .
+    gv_subobject = iv_subobject .
+    gv_alprog    = iv_alprog .
 
-    me->create(
-      changing
-        handles = gv_handle
-    ).
+    if ( iv_lognumber is not initial ) .
+
+      me->get_handle_saved( iv_lognumber = iv_lognumber ).
+
+      gv_title     = iv_title .
+      gv_object    = iv_object .
+      gv_subobject = iv_subobject .
+      gv_alprog    = iv_alprog .
+
+    else .
+      me->create( changing handles = gv_handle ) .
+    endif .
+
 
   endmethod.
+
 
   method create.
 
@@ -615,6 +628,12 @@ class zcl_application_log implementation.
 
         rv_value = value #( lt_header_data[ 1 ]-log_handle optional ) .
 
+        " Informando dados do log ja criado
+        me->gv_object    = value #( lt_header_data[ 1 ]-object optional ) .
+        me->gv_subobject = value #( lt_header_data[ 1 ]-subobject optional ) .
+        me->gv_handle    = value #( lt_header_data[ 1 ]-log_handle optional ) .
+        me->gv_alprog    = sy-cprog .
+
       endif .
 
     endif .
@@ -663,10 +682,10 @@ class zcl_application_log implementation.
     if ( lv_object    is not initial ) and
        ( lv_subobject is not initial ) .
 
-      data(lo_app) = new zcl_application_log( title     = lv_title
-                                              object    = lv_object
-                                              subobject = lv_subobject
-                                              alprog    = sy-cprog ) .
+      data(lo_app) = new zcl_application_log( iv_title     = lv_title
+                                              iv_object    = lv_object
+                                              iv_subobject = lv_subobject
+                                              iv_alprog    = sy-cprog ) .
 
       if ( lo_app is bound ) .
 
