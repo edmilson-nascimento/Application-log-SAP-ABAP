@@ -43,11 +43,17 @@ class zcl_application_log definition
       returning
         value(rv_value) type balognr .
 
-    methods get_handle_saved
+    class-methods get_handle_saved
       importing
         !iv_lognumber   type balhdr-lognumber
       returning
         value(rv_value) type balhdr-log_handle .
+
+    class-methods get_messages_saved
+      importing
+        !iv_lognumber   type balhdr-lognumber
+      returning
+        value(rt_value) type balm_t .
 
     class-methods data_out
       importing
@@ -527,37 +533,40 @@ class zcl_application_log implementation.
 *       t_exceptions       =
       .
 
-    clear l_t_log_handle.
-    "loop at l_t_log_header assigning field-symbol(<l_s_log_header>) .
-    loop at l_t_log_header assigning field-symbol(<l_s_log_header>) .
-      call function 'BAL_LOG_EXIST'
-        exporting
-          i_log_handle  = <l_s_log_header>-log_handle
-        exceptions
-          log_not_found = 1.
-      if sy-subrc = 0.
-        insert <l_s_log_header>-log_handle into table l_t_log_handle.
-        delete l_t_log_header.
-      endif.
-    endloop.
+    l_t_log_handle = value #( ( lt_header_data[ 1 ]-log_handle ) ) .
 
-
-    call function 'BAL_DB_LOAD'
-      exporting
-        i_t_log_header         = l_t_log_header
-        i_do_not_load_messages = read_from_db_hdr
-        i_lock_handling        = 1
-      importing
-        e_t_log_handle         = l_t_log_loaded
-        e_t_locked             = l_t_locked
-      exceptions
-        others                 = 0.
-    insert lines of l_t_log_loaded into table l_t_log_handle.
-
-    describe table l_t_locked lines sy-tfill.
-    if sy-tfill > 0.
-      message s263(bl) with sy-tfill.
-    endif.
+*
+*    clear l_t_log_handle.
+*    "loop at l_t_log_header assigning field-symbol(<l_s_log_header>) .
+*    loop at lt_header_data assigning field-symbol(<l_s_log_header>) .
+*      call function 'BAL_LOG_EXIST'
+*        exporting
+*          i_log_handle  = <l_s_log_header>-log_handle
+*        exceptions
+*          log_not_found = 1.
+*      if sy-subrc = 0.
+*        insert <l_s_log_header>-log_handle into table l_t_log_handle.
+*        delete l_t_log_header.
+*      endif.
+*    endloop.
+*
+*
+*    call function 'BAL_DB_LOAD'
+*      exporting
+*        i_t_log_header         = l_t_log_header
+*        i_do_not_load_messages = read_from_db_hdr
+*        i_lock_handling        = 1
+*      importing
+*        e_t_log_handle         = l_t_log_loaded
+*        e_t_locked             = l_t_locked
+*      exceptions
+*        others                 = 0.
+*    insert lines of l_t_log_loaded into table l_t_log_handle.
+*
+*    describe table l_t_locked lines sy-tfill.
+*    if sy-tfill > 0.
+*      message s263(bl) with sy-tfill.
+*    endif.
 
     if not i_s_display_profile is initial.
       l_s_display_profile = i_s_display_profile.
@@ -638,6 +647,7 @@ class zcl_application_log implementation.
 
     if ( iv_lognumber is not initial ) .
 
+      lt_lognumbers = value #( ( item = iv_lognumber ) ) .
 
       call function 'APPL_LOG_READ_DB_WITH_LOGNO'
 *        exporting
@@ -658,11 +668,11 @@ class zcl_application_log implementation.
 
         rv_value = value #( lt_header_data[ 1 ]-log_handle optional ) .
 
-        " Informando dados do log ja criado
-        me->gv_object    = value #( lt_header_data[ 1 ]-object optional ) .
-        me->gv_subobject = value #( lt_header_data[ 1 ]-subobject optional ) .
-        me->gv_handle    = value #( lt_header_data[ 1 ]-log_handle optional ) .
-        me->gv_alprog    = sy-cprog .
+*        " Informando dados do log ja criado
+*        me->gv_object    = value #( lt_header_data[ 1 ]-object optional ) .
+*        me->gv_subobject = value #( lt_header_data[ 1 ]-subobject optional ) .
+*        me->gv_handle    = value #( lt_header_data[ 1 ]-log_handle optional ) .
+*        me->gv_alprog    = sy-cprog .
 
       endif .
 
@@ -670,6 +680,48 @@ class zcl_application_log implementation.
 
 
   endmethod .
+
+
+  method get_messages_saved .
+
+    data:
+      lt_lognumbers  type szal_lognumbers,
+      lt_header_data type table of balhdr,
+      lt_messages    type emma_message_tab.
+
+    clear:
+      rt_value .
+
+    if ( iv_lognumber is not initial ) .
+
+      lt_lognumbers = value #( ( item = iv_lognumber ) ) .
+
+      call function 'APPL_LOG_READ_DB_WITH_LOGNO'
+*        exporting
+*          put_into_memory    = SPACE
+*        importing
+*          number_of_logs     =
+        tables
+          lognumbers  = lt_lognumbers
+          header_data = lt_header_data
+*         header_parameters  =
+          messages    = lt_messages
+*         message_parameters =
+*         contexts    =
+*         t_exceptions       =
+        .
+
+      if ( lines( lt_messages ) gt 0 ) .
+
+        rt_value = lt_messages .
+
+      endif .
+
+    endif .
+
+  endmethod .
+
+
 
   method data_out .
 
