@@ -110,12 +110,11 @@ class zcl_application_log implementation.
 
     if ( iv_lognumber is not initial ) .
 
-      me->get_handle_saved( iv_lognumber = iv_lognumber ).
-
       me->gv_title     = iv_title .
       me->gv_object    = iv_object .
       me->gv_subobject = iv_subobject .
       me->gv_alprog    = iv_alprog .
+      me->gv_handle    = get_handle_saved( iv_lognumber = iv_lognumber ).
 
     else .
       me->create( changing cv_handle = gv_handle ) .
@@ -762,23 +761,19 @@ class zcl_application_log implementation.
       lv_object    type balobj_d  value 'ZPP',
       lv_subobject type balsubobj value 'ZPP0001'.
 
-    if ( lv_object    is not initial ) and
-       ( lv_subobject is not initial ) .
+    data(lo_app) = new zcl_application_log( iv_title     = lv_title
+                                            iv_object    = lv_object
+                                            iv_subobject = lv_subobject
+                                            iv_alprog    = sy-cprog
+                                            iv_lognumber = iv_lognumber ) .
 
-      data(lo_app) = new zcl_application_log( iv_title     = lv_title
-                                              iv_object    = lv_object
-                                              iv_subobject = lv_subobject
-                                              iv_alprog    = sy-cprog ) .
+    if ( lo_app is bound ) .
 
-      if ( lo_app is bound ) .
+      rv_value = lo_app->add_bapiret2_t( it_messages ) .
 
-        rv_value = lo_app->add_bapiret2_t( it_messages ) .
+      lo_app->save( ) .
 
-        lo_app->save( ) .
-
-        free lo_app .
-
-      endif .
+      free lo_app .
 
     endif .
 
