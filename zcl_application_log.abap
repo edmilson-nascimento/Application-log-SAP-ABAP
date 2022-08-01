@@ -16,6 +16,7 @@ class zcl_application_log definition
 
     methods add
       importing
+        !iv_handle  type balloghndl optional
         !is_message type bal_s_msg .
 
     methods add_bapiret2
