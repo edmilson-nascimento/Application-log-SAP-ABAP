@@ -120,7 +120,6 @@ class zcl_application_log implementation.
       me->create( changing cv_handle = gv_handle ) .
     endif .
 
-
   endmethod.
 
 
