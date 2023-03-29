@@ -3,6 +3,7 @@ class zcl_application_log definition
   public
   final
   create public .
+  
 
   public section.
 
