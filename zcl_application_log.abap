@@ -165,7 +165,7 @@ class zcl_application_log implementation.
         log_not_found            = 1
         lognumber_already_exists = 2
         numbering_error          = 3
-        others                   = 4.
+        others                   = 4 .
 
   endmethod.
 
