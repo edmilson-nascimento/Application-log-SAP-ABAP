@@ -238,7 +238,6 @@ class zcl_pp_conf_status_kanban implementation.
 
     me->atualiza_tabela_z( ls_data ) .
 
-
   endmethod .
 
 
@@ -258,10 +257,6 @@ class zcl_pp_conf_status_kanban implementation.
       lt_mseg  type table of imseg.
 
     clear rv_value .
-
-*    call function 'MB_ANALYZE_IMSEG'
-*      tables
-*        ct_imseg = lt_mseg.
 
     if ( iv_werks is not initial ) and
        ( me->tp_mov_ok( iv_bwart ) eq abap_true ) and
@@ -843,6 +838,5 @@ class zcl_pp_conf_status_kanban implementation.
     endif .
 
   endmethod .
-
 
 endclass.
