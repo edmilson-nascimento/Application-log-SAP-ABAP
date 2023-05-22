@@ -12,7 +12,6 @@ A diferença de implementação é bem simples, então, resolvi fazer de forma a
 
 ## 1- Salvando Log de forma a visualizar pela SLG1 ##
 Antes de qualquer coisa, para que os log's sejam salvos, é necessários criar um objeto (caso ainda não tenha sido criado) e um sub-objeto na transação `SLG0`. Esses mesmos objeto e sub-objeto são utilizados para consultor os log's na transação `SLG1`. Não tem nesse exemplo, mas a implementação segue abaixo.
-
 ```abap
 data:
   app_log type ref to zcl_bal_log.
@@ -24,7 +23,6 @@ data:
       subobject = 'Z_SUBOBJECT'
       alprog    = sy-cprog.
 ```
-
 ## 2- Armazenando em tempo de execução e exibindo ao final do processo ##
 Eu uso, em grande parte das vezes, a utilização sem salvar o log. Um dos pontos mais interessantes para a utilização é a forma variada de exibir essa mensagem. Como é mostrado no [post do scn](), tem varias forma que as proprias funções do `Application Log` podem mostrar as mensagens de acordo com a melhor opção para solução. 
 Para criação de objeto, deve ser feita da mesma forma que esta no exemplo, conforme modelo abaixo. Ao deixar de informar os valores, a solução ja entende a finalidade de suas mensagens.
